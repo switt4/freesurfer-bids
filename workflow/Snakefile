@@ -1,0 +1,49 @@
+#---- snakebids boilerplate
+
+import snakebids
+from snakebids import bids
+
+configfile: 'config/snakebids.yml'
+
+#writes inputs_config.yml and updates config dict
+snakebids.generate_inputs_config(config)
+
+#this adds constraints to the bids naming
+wildcard_constraints:  **snakebids.get_wildcard_constraints(config)
+
+#----
+
+def get_scratch_dir():
+    if 'SLURM_TMPDIR' in os.environ:
+        return os.environ['SLURM_TMPDIR'] 
+    else:
+        return config['alternate_scratch_dir']
+
+rule all:
+    input: 
+        tar = expand(bids(root='results',suffix='freesurfer.tar',**config['subj_wildcards'],include_subject_dir=False,include_session_dir=False),
+                 zip,**config['input_zip_lists']['t1w']),
+
+
+rule recon_all:
+    input:
+        images =  lambda wildcards: expand( config['input_path']['t1w'], zip, \
+                **snakebids.filter_list(config['input_zip_lists']['t1w'],wildcards)),
+    params:
+        subject_dir = get_scratch_dir(),
+        subjid = bids(include_subject_dir=False,include_session_dir=False, **config['subj_wildcards']),
+        recon_all_args = ' '.join([ f'-{arg}' for arg in config['recon_all_args']]),
+        input_images = lambda wildcards, input: ' '.join([f'-i {img}' for img in input.images]),
+        out_tar_real = lambda wildcards, output: os.path.realpath(output.tar)
+    output:
+        tar = bids(root='results',suffix='freesurfer.tar',**config['subj_wildcards'],include_subject_dir=False,include_session_dir=False)
+    threads: 8
+    shell: 
+        'recon-all -threads {threads} -sd {params.subject_dir} -subjid {params.subjid}'
+        ' -hires -parallel'
+        ' {params.recon_all_args}'
+        ' {params.input_images} && '
+        ' cd {params.subject_dir} && tar -cvf {params.out_tar_real} {params.subjid} '
+
+
+
