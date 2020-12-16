@@ -38,6 +38,9 @@ rule recon_all:
     output:
         tar = bids(root='results',suffix='freesurfer.tar',**config['subj_wildcards'],include_subject_dir=False,include_session_dir=False)
     threads: 8
+    resources:
+        mem_mb = 16000,
+        time = 720,
     shell: 
         'recon-all -threads {threads} -sd {params.subject_dir} -subjid {params.subjid}'
         ' -hires -parallel'
