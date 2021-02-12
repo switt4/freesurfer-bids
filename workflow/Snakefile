@@ -41,6 +41,7 @@ rule recon_all:
     resources:
         mem_mb = 16000,
         time = 720,
+    container: config['singularity_uri']['fs']
     shell: 
         'recon-all -threads {threads} -sd {params.subject_dir} -subjid {params.subjid}'
         ' -hires -parallel'
