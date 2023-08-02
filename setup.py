@@ -23,7 +23,7 @@ setuptools.setup(
     ]},
     install_requires=[
         "snakebids<=0.5",
-        "SQLAlchemy<=1.1"
+        "SQLAlchemy<=0.9"
     ],
     python_requires='>=3.7'
 )
