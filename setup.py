@@ -22,8 +22,7 @@ setuptools.setup(
         'freesurfer-bids=run:main'
     ]},
     install_requires=[
-        "snakebids<=0.5",
-        "SQLAlchemy<=0.9"
+        "snakebids<=0.5"
     ],
     python_requires='>=3.7'
 )
